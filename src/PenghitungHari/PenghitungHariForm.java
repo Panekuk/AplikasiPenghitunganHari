@@ -1,21 +1,103 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package PenghitungHari;
 
-/**
- *
- * @author Lenovo
- */
-public class PenghitungHariForm extends javax.swing.JFrame {
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.time.*;
+import java.time.format.TextStyle;
+import java.time.temporal.ChronoUnit;
+import java.util.Locale;
 
-    /**
-     * Creates new form PenghitungHariForm
-     */
+public class PenghitungHariForm extends javax.swing.JFrame {
+    
     public PenghitungHariForm() {
         initComponents();
+        
+        setTitle("Aplikasi Penghitungan Hari");
+        setLocationRelativeTo(null);
+        setResizable(false);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        
+        // 🌈 Warna tombol
+        btnHitung.setBackground(new Color(76,175,80));  // Hijau
+        btnReset.setBackground(new Color(255,235,59));  // Kuning
+        btnKeluar.setBackground(new Color(244,67,54));  // Merah
+        btnHitung.setForeground(Color.WHITE);
+        btnReset.setForeground(Color.BLACK);
+        btnKeluar.setForeground(Color.WHITE);
+        
+          // 🌿 Efek Hover
+        addHoverEffect(btnHitung, new Color(76,175,80), new Color(56,142,60));
+        addHoverEffect(btnReset, new Color(255,235,59), new Color(255,213,0));
+        addHoverEffect(btnKeluar, new Color(244,67,54), new Color(211,47,47));
+        
+        // 🧮 Event Tombol
+        btnHitung.addActionListener(e -> hitungHari());
+        btnReset.addActionListener(e -> resetForm());
+        btnKeluar.addActionListener(e -> {
+            int confirm = JOptionPane.showConfirmDialog(this, "Yakin ingin keluar?", 
+                    "Konfirmasi Keluar", JOptionPane.YES_NO_OPTION);
+            if (confirm == JOptionPane.YES_OPTION) System.exit(0);
+        });
+        // 🗓️ Set tahun ke tahun sekarang dan hilangkan koma pemisah
+        spnTahun.setValue(LocalDate.now().getYear());
+        
+    }
+        
+    
+    // ================== LOGIKA UTAMA ==================
+    private void hitungHari() {
+        try {
+            int tahun = spnTahun.getYear(); // ambil tahun dari JYearChooser
+            int bulan = cmbBulan.getSelectedIndex() + 1; // Januari = 0
+
+            LocalDate tanggalAwal = LocalDate.of(tahun, bulan, 1);
+            int jumlahHari = tanggalAwal.lengthOfMonth();
+
+            String hariPertama = tanggalAwal.getDayOfWeek()
+                    .getDisplayName(TextStyle.FULL, new Locale("id", "ID"));
+            String hariTerakhir = tanggalAwal.withDayOfMonth(jumlahHari)
+                    .getDayOfWeek().getDisplayName(TextStyle.FULL, new Locale("id", "ID"));
+            boolean kabisat = Year.isLeap(tahun);
+
+            txtHasil.setText(
+                    "📅 Bulan: " + cmbBulan.getSelectedItem() + " " + tahun + "\n" +
+                    "Jumlah Hari : " + jumlahHari + "\n" +
+                    "Hari Pertama: " + hariPertama + "\n" +
+                    "Hari Terakhir: " + hariTerakhir + "\n" +
+                    "Tahun Kabisat: " + (kabisat ? "Ya" : "Tidak")
+            );
+
+            // 🌟 Fitur tambahan: selisih tanggal
+            if (cal1.getDate() != null && cal2.getDate() != null) {
+                LocalDate tgl1 = cal1.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                LocalDate tgl2 = cal2.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                long selisih = ChronoUnit.DAYS.between(tgl1, tgl2);
+                txtHasil.append("\n\nSelisih antara dua tanggal: " + Math.abs(selisih) + " hari");
+            }
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, 
+                "Masukkan data dengan benar!", 
+                "Kesalahan", 
+                JOptionPane.ERROR_MESSAGE);
+        }
+    }
+         // ================== RESET FORM ==================
+    private void resetForm() {
+        cmbBulan.setSelectedIndex(0);
+        spnTahun.setValue(LocalDate.now().getYear());
+        txtHasil.setText("");
+        cal1.setDate(null);
+        cal2.setDate(null);
+    }
+
+    // ================== EFEK HOVER ==================
+    private void addHoverEffect(JButton button, Color normal, Color hover) {
+        button.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) { button.setBackground(hover); }
+            public void mouseExited(MouseEvent e) { button.setBackground(normal); }
+        });
     }
 
     /**
@@ -43,7 +125,7 @@ public class PenghitungHariForm extends javax.swing.JFrame {
         jLabel6 = new javax.swing.JLabel();
         lblFitur = new javax.swing.JLabel();
         cmbBulan = new javax.swing.JComboBox<>();
-        spnTahun = new javax.swing.JSpinner();
+        spnTahun = new com.toedter.calendar.JYearChooser();
         jLabel1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -72,7 +154,7 @@ public class PenghitungHariForm extends javax.swing.JFrame {
 
         lblFitur.setText("FiturTambahan : ");
 
-        cmbBulan.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cmbBulan.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember" }));
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -88,9 +170,9 @@ public class PenghitungHariForm extends javax.swing.JFrame {
                                     .addComponent(lblBulan)
                                     .addComponent(lblTahun))
                                 .addGap(38, 38, 38)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(cmbBulan, 0, 97, Short.MAX_VALUE)
-                                    .addComponent(spnTahun)))
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(cmbBulan, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(spnTahun, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addGap(23, 23, 23)
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -125,10 +207,10 @@ public class PenghitungHariForm extends javax.swing.JFrame {
                     .addComponent(lblBulan)
                     .addComponent(cmbBulan, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(lblTahun)
                     .addComponent(spnTahun, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(32, 32, 32)
+                .addGap(29, 29, 29)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnHitung)
                     .addComponent(btnReset)
@@ -172,7 +254,7 @@ public class PenghitungHariForm extends javax.swing.JFrame {
                 .addComponent(jLabel1)
                 .addGap(18, 18, 18)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(16, Short.MAX_VALUE))
+                .addContainerGap(19, Short.MAX_VALUE))
         );
 
         pack();
@@ -230,7 +312,7 @@ public class PenghitungHariForm extends javax.swing.JFrame {
     private javax.swing.JLabel lblFitur;
     private javax.swing.JLabel lblSelisih;
     private javax.swing.JLabel lblTahun;
-    private javax.swing.JSpinner spnTahun;
+    private com.toedter.calendar.JYearChooser spnTahun;
     private javax.swing.JTextArea txtHasil;
     // End of variables declaration//GEN-END:variables
 }
